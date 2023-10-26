@@ -1,0 +1,144 @@
+<template>
+    <div>
+        
+    </div>
+</template>
+
+<script>
+import axios from 'axios'
+export default {
+    data(){
+        return{
+            treeData: null, // 用于存储解析后的二叉树数据
+            originData :null //解析前的二叉树数据
+        } 
+    },
+    methods: {
+        getDepth()
+        {
+            var max = new Array(1);
+            max[0] = 1;
+            let depth = 1;
+            this.RecursiveGetDepth(this.treeData,max,depth);
+            return max[0];
+        },
+        RecursiveGetDepth(node,max,depth)
+        {
+            if(!node)
+            {
+                return;
+            }
+            
+            if(depth>max[0])
+            {
+                max[0] = depth;
+            }
+
+            this.RecursiveGetDepth(node.left,max,depth+1);
+            this.RecursiveGetDepth(node.right,max,depth+1);
+        },
+        buildBinaryTree(data) {
+            const nodes = data.split('_');
+            const buildNode = () => {
+                const val = nodes.shift();
+                if (val === '#') {
+                    return null;
+                }
+                return { value: val, left: buildNode(), right: buildNode() };
+            };
+            this.treeData = buildNode();
+        },
+        
+        drawBinaryTree(node, x, y, svg,length) {
+            if (node) {
+                
+                // 绘制当前节点
+                const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+                circle.setAttribute("cx", x);
+                circle.setAttribute("cy", y);
+                circle.setAttribute("r", 20);
+                circle.setAttribute("fill", "white"); // 设置节点背景颜色为白色
+                circle.setAttribute("stroke", "black"); // 设置线条颜色
+                svg.appendChild(circle);
+                
+                // 添加文本标签以显示节点的数据
+                const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                text.setAttribute("x", x);
+                text.setAttribute("y", y+2); // 调整文本位置以居中显示
+                text.setAttribute("text-anchor", "middle");
+                text.setAttribute("alignment-baseline", "middle");
+                text.textContent = node.value;
+                svg.appendChild(text);
+                
+                let sonX = x-length;
+                let sonY = y+length;
+                if (node.left!=null) {
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute("x1", sonX+20/Math.sqrt(2));
+                    line.setAttribute("y1", sonY-20/Math.sqrt(2));
+                    line.setAttribute("x2", x-20/Math.sqrt(2));
+                    line.setAttribute("y2", y+20/Math.sqrt(2));
+                    line.setAttribute("stroke", "black"); // 设置线条颜色
+                    svg.appendChild(line);
+                }
+                // 递归绘制左子树
+                this.drawBinaryTree(node.left, sonX, sonY, svg,length/1.5);
+                
+                sonX = x + length;
+                sonY = y + length;
+                if (node.right!=null) {
+                    const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    line.setAttribute("x1", sonX-20/Math.sqrt(2));
+                    line.setAttribute("y1", sonY-20/Math.sqrt(2));
+                    line.setAttribute("x2", x+20/Math.sqrt(2));
+                    line.setAttribute("y2", y+20/Math.sqrt(2));
+                    line.setAttribute("stroke", "black"); // 设置线条颜色
+                    svg.appendChild(line);
+                }
+                // 递归绘制右子树
+                this.drawBinaryTree(node.right, sonX, sonY, svg,length/1.5);
+            }
+        },
+        displayTree(node,svgContainer)
+        {
+            let depth = this.getDepth();
+            let length = 50;
+            //先获取最大连接线长度
+            for(let i=0;i<depth-2;i++)
+            {
+                length*=1.5;
+            }
+            this.drawBinaryTree(node,425,50,svgContainer,length);
+        },
+    },
+    mounted() {
+        axios.get('http://localhost:8080/treeData') // 替换为实际的API端点
+            .then(response => {
+                //返回数据先打印到警告框
+                alert(response.data.treeData);
+                // 处理响应数据并加载到originData
+                this.originData = response.data.treeData; 
+                // 后端提供的二叉树数据字符串
+                const binaryTreeData = this.originData;
+                
+                // 解析数据并绘制二叉树
+                this.buildBinaryTree(binaryTreeData);
+                
+                // 创建一个SVG容器
+                const svgContainer = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+                svgContainer.setAttribute("width", "800");
+                svgContainer.setAttribute("height", "800");
+                
+                // 调用绘制方法
+                this.displayTree(this.treeData,svgContainer);
+                
+                // 将SVG容器添加到页面中
+                this.$el.appendChild(svgContainer);
+            })
+            .catch(error => {
+                console.error('Axios error:', error);
+            });
+    },
+    name:"treeView"
+}
+</script>
