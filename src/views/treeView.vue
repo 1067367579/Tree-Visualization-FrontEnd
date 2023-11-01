@@ -112,12 +112,12 @@ export default {
         },
     },
     mounted() {
-        axios.get('http://localhost:8080/treeData') // 替换为实际的API端点
+        axios.get('http://localhost:8080/treeData/1') // 替换为实际的API端点
             .then(response => {
                 //返回数据先打印到警告框
-                alert(response.data.treeData);
+                alert(response.data.data);
                 // 处理响应数据并加载到originData
-                this.originData = response.data.treeData; 
+                this.originData = response.data.data; 
                 // 后端提供的二叉树数据字符串
                 const binaryTreeData = this.originData;
                 
