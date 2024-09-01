@@ -1,4 +1,8 @@
-# my-tree
+# 树的可视化-前端
+
+## 简介
+
+该项目的目标是将数据结构中的二叉树逻辑结构利用网页和控制台进行可视化打印, 使用了Vue框架, 结合svg进行渲染
 
 ## Project setup
 ```
@@ -20,5 +24,3 @@ npm run build
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
